@@ -36,6 +36,7 @@ df[['basic', 'jabatan', 'tunjangan_bpjstk',
 # Convert Dataframe ke Dict dan masukan nik
 data = df.reset_index().to_dict(orient='records')
 print(df.columns)
+
 def multi_slip(data, filename="data/slip_gaji.pdf"):
     c = canvas.Canvas(filename, pagesize= A4)
     width, height = A4
