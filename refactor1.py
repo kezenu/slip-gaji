@@ -71,13 +71,14 @@ def render_kop(c):
     c.drawString(x, y, "Email : pt.alkatra@gmail.com; Website : https://pt-alkatra.business.site")
     y -= 0.5 * cm
 
-
 def render_header(c, item, x, start_y):
 
     text_width = c.stringWidth("SLIP GAJI KARYAWAN", "Helvetica-Bold", 16)
     center = (width - text_width) / 2
     c.setFont("Helvetica-Bold", 16)
     c.drawString(center, start_y, "SLIP GAJI KARYAWAN")
+    c.setLineWidth(3)
+    c.line(center , start_y - 0.3 * cm, center + text_width, start_y - 0.3 * cm)
     y = start_y - 2 * cm
 
     c.setFont("Helvetica", 11)
