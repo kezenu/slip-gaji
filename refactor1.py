@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
@@ -5,6 +6,7 @@ from reportlab.lib.units import cm
 from reportlab.lib import colors
 from datetime import date
 from decimal import Decimal, ROUND_DOWN
+
 
 bulan_indonesia = [
     "", "Januari", "Februari", "Maret", "April", "Mei", "Juni",
@@ -16,6 +18,8 @@ df = pd.read_excel('gaji_contoh.xlsx')
 
 # Mengisi semua data yang kosong dengan nilai 0
 df.fillna(0, inplace=True)
+
+df['nik'] = df['nik'].apply(lambda x: str(int(x)) if isinstance(x,(int, float)) else str(x))
 
 # Menetapkan indek berdasarakn NIK
 df.set_index(keys='nik', inplace=True)
@@ -70,6 +74,12 @@ def render_kop(c):
     c.setFont("Times-Roman", 12)
     c.drawString(x, y, "Email : pt.alkatra@gmail.com; Website : https://pt-alkatra.business.site")
     y -= 0.5 * cm
+    
+    # Garis dibawah kop surat
+    c.setLineWidth(1)
+    c.line( 1 * cm, y, width - 1 * cm, y)
+    c.setLineWidth(2)
+    c.line( 1 * cm, y - 0.1 * cm, width - 1 * cm, y - 0.1 * cm)
 
 def render_header(c, item, x, start_y):
 
@@ -77,6 +87,8 @@ def render_header(c, item, x, start_y):
     center = (width - text_width) / 2
     c.setFont("Helvetica-Bold", 16)
     c.drawString(center, start_y, "SLIP GAJI KARYAWAN")
+
+    # Underline SLIP GAJI KARYAWAN
     c.setLineWidth(3)
     c.line(center , start_y - 0.3 * cm, center + text_width, start_y - 0.3 * cm)
     y = start_y - 2 * cm
@@ -87,7 +99,7 @@ def render_header(c, item, x, start_y):
     y -= 0.5 * cm
     
     c.drawString(x, y, "NIK")
-    c.drawString(x + 5 * cm, y, f": {item['nik']:.0f}")
+    c.drawString(x + 5 * cm, y, f": {item['nik']}")
     y -= 0.5 * cm
 
     c.drawString(x, y, "Lokasi")
@@ -148,7 +160,11 @@ def render_penerimaan(c, item, x, start_y):
     c.drawString(x, y, "TOTAL PENERIMAAN")
     c.drawString(x + 10 * cm, y, f": Rp. {item['total_penerimaan']:,.2f}")
 
-    return y - 1 * cm
+    # Deckorasi pada bagian penerimaan
+    c.setLineWidth(1)
+    c.roundRect(x - 0.3 * cm, y - 0.3 * cm , 15.5 * cm, 5.5 * cm, radius=20, stroke=1, fill=0)
+
+    return y - 1.5 * cm
 
 def render_potongan(c, item, x, start_y):
     c.setFont("Helvetica-Bold", 12)
@@ -166,7 +182,7 @@ def render_potongan(c, item, x, start_y):
     c.drawString(x, y, "BPJS Ketenagakerjaan")
     c.drawString(x + 10 * cm, y, f": Rp. {bpjs_tk:,.2f}")
     y -= 0.5 * cm
-    
+
     c.drawString(x, y, "Ijin, Sakit, Kekurangan jam, dll ")
     c.drawString(x + 10 * cm, y, f": Rp. {item['kekurangan_jam']:,.2f}")
     y -= 0.5 * cm
@@ -175,11 +191,11 @@ def render_potongan(c, item, x, start_y):
     c.drawString(x, y, "Revisi, Kelebihan Bulan lalu, Operasional, dll")
     c.drawString(x + 10 * cm, y, f": Rp. {revisi:,.2f}")
     y -= 0.5 * cm
-    
+
     c.drawString(x, y, "Pajak PPH 21")
     c.drawString(x + 10 * cm, y, f": Rp. {item['pph21']:,.2f}")
     y -= 0.5 * cm
-    
+
     c.setFont("Helvetica-Bold", 11)
     item['total_potongan'] = bpjs_kes + bpjs_tk + item['kekurangan_jam'] + revisi + item['pph21']
     c.drawString(x, y, "TOTAL POTONGAN")
@@ -197,17 +213,28 @@ def render_footer(c, item, x, start_y):
 
     c.setFont("Helvetica", 11)
     c.drawString(x, y, "Mengetahui")
-    c.drawString(x, y - 3 * cm, "Joel Simatupang")
-    c.drawString(x, y - 3.5 * cm, "HRD")
+    y -= y - 6 * cm
+    c.drawString(x, y, "Joel Simatupang")
+    y -= y - 6.5 * cm
+    c.drawString(x, y, "HRD")
+    y -= y - 3.5 * cm
+
+    c.setFont("Helvetica", 9)
+    hari_ini = date.today()
+    c.drawString(1 * cm, 2 * cm, f"Dokumen ini di cetak otomatis oleh sistem pada tanggal {hari_ini.strftime('%d-%m-%Y')}")
 
 
-def multi_slip(data, filename="data/slip_gaji1.pdf"):
-    c = canvas.Canvas(filename, pagesize=A4)
-    width, height = A4
+def multi_slip(data, output_dir="data/slip"):
+    os.makedirs(output_dir, exist_ok=True)
 
     for item in data:
-        render_kop(c)
+        nama = item['nama'].replace(" ", "_")
+        nik = str(item['nik'])
+        filepath = os.path.join(output_dir, f"{nik}_{nama}.pdf") 
+        c = canvas.Canvas(filepath, pagesize=A4)
+        width, height = A4
 
+        render_kop(c)
         margin_x = 2 * cm
         start_y = height - 4 * cm   # Inisialisasi bari bertama, kecuali judul
         start_y = render_header(c, item, margin_x, start_y)
@@ -215,6 +242,6 @@ def multi_slip(data, filename="data/slip_gaji1.pdf"):
         start_y = render_potongan(c, item, margin_x, start_y)
         start_y = render_footer(c, item, margin_x, start_y)
         c.showPage()
-    c.save()
+        c.save()
 
 multi_slip(data)
