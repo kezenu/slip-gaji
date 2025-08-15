@@ -6,48 +6,50 @@ from reportlab.lib.units import cm
 from reportlab.lib import colors
 from datetime import date
 from decimal import Decimal, ROUND_DOWN
+from PyPDF2 import PdfReader, PdfWriter
+
 
 
 bulan_indonesia = [
     "", "Januari", "Februari", "Maret", "April", "Mei", "Juni",
     "Juli", "Agustus", "September", "Oktober", "November", "Desember"
 ]
+def controller_data():
+    # Baca data
+    df = pd.read_excel('assets/gaji_contoh.xlsx')
 
-# Baca data
-df = pd.read_excel('gaji_contoh.xlsx')
+    # Mengisi semua data yang kosong dengan nilai 0
+    df.fillna(0, inplace=True)
 
-# Mengisi semua data yang kosong dengan nilai 0
-df.fillna(0, inplace=True)
+    df['nik'] = df['nik'].apply(lambda x: str(int(x)) if isinstance(x,(int, float)) else str(x))
 
-df['nik'] = df['nik'].apply(lambda x: str(int(x)) if isinstance(x,(int, float)) else str(x))
+    # Menetapkan indek berdasarakn NIK
+    df.set_index(keys='nik', inplace=True)
 
-# Menetapkan indek berdasarakn NIK
-df.set_index(keys='nik', inplace=True)
+    # Convert semua data ke Integer jika ada
+    df[['basic', 'jabatan', 'tunjangan_bpjstk', 
+        'tunjangan_bpjskes', 'cuti', 'holiday',
+        'lembur', 'event', 'total_ot', 
+        'revisi', 'thr', 'pph_kantor',
+        'bruto', 'operasional', 'kelebihan', 
+        'kekurangan_jam','potongan_bpjstk', 
+        'pph21', 'total_potongan', 'netto']] = df[['basic', 'jabatan', 'tunjangan_bpjstk', 
+                                                'tunjangan_bpjskes', 'cuti', 'holiday',
+                                                'lembur', 'event', 'total_ot', 
+                                                'revisi', 'thr', 'pph_kantor',
+                                                'bruto', 'operasional', 'kelebihan', 
+                                                'kekurangan_jam', 'potongan_bpjstk',
+                                                'pph21', 'total_potongan','netto']].astype(int)
 
-# Convert semua data ke Integer jika ada
-df[['basic', 'jabatan', 'tunjangan_bpjstk', 
-    'tunjangan_bpjskes', 'cuti', 'holiday',
-    'lembur', 'event', 'total_ot', 
-    'revisi', 'thr', 'pph_kantor',
-    'bruto', 'operasional', 'kelebihan', 
-    'kekurangan_jam','potongan_bpjstk', 
-    'pph21', 'total_potongan', 'netto']] = df[['basic', 'jabatan', 'tunjangan_bpjstk', 
-                                              'tunjangan_bpjskes', 'cuti', 'holiday',
-                                              'lembur', 'event', 'total_ot', 
-                                              'revisi', 'thr', 'pph_kantor',
-                                              'bruto', 'operasional', 'kelebihan', 
-                                              'kekurangan_jam', 'potongan_bpjstk',
-                                              'pph21', 'total_potongan','netto']].astype(int)
-
-# Convert Dataframe ke Dict dan masukan nik
-data = df.reset_index().to_dict(orient='records')
-print(df.columns)
+    # Convert Dataframe ke Dict dan masukan nik
+    data = df.reset_index().to_dict(orient='records')
+    return data
 
 c = canvas.Canvas(filename="data/contoh.pdf", pagesize=A4)
 width, height = A4
 
 def render_kop(c):
-    c.drawImage("logo1.jpg", # Path file gambar
+    c.drawImage("assets/logo1.jpg", # Path file gambar
                 3 * cm, # Koordinat x
                 height - 2.8 * cm, # Koordinat y
                 width= 2.3 * cm, # lebar gambar dalam cm
@@ -228,10 +230,13 @@ def multi_slip(data, output_dir="data/slip"):
     os.makedirs(output_dir, exist_ok=True)
 
     for item in data:
+        # Penamaan file dan direktory
         nama = item['nama'].replace(" ", "_")
-        nik = str(item['nik'])
-        filepath = os.path.join(output_dir, f"{nik}_{nama}.pdf") 
-        c = canvas.Canvas(filepath, pagesize=A4)
+        filepath_temp = os.path.join(output_dir, f"temp {nama}.pdf")
+        filepath_final = os.path.join(output_dir, f"{nama} .pdf")
+
+        # Pembuatan File PDF
+        c = canvas.Canvas(filepath_temp, pagesize=A4)
         width, height = A4
 
         render_kop(c)
@@ -244,4 +249,19 @@ def multi_slip(data, output_dir="data/slip"):
         c.showPage()
         c.save()
 
-multi_slip(data)
+        # Menambahkan Password dengan NIK Karyawan
+
+        password = str(int(item['nik']))
+        reader = PdfReader(filepath_temp)
+        writer = PdfWriter()
+
+        for page in reader.pages:
+            writer.add_page(page)
+
+        writer.encrypt(password)
+
+        with open(filepath_final, "wb") as f:
+            writer.write(f)
+
+        os.remove(filepath_temp)
+        print(f"Slip untuk {item['nama']} selesai → {filepath_final} (pass: {password})")
