@@ -325,5 +325,6 @@ def single_slip(data, identifier, output_dir="data/slip"):
             return
 
     print("❌ Data tidak ditemukan.")
-nama = "Wisnu sanjaya"
-single_slip(controller_data(), nama)
+
+# nama = "Wisnu sanjaya"
+# single_slip(controller_data(), nama)

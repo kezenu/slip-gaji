@@ -44,3 +44,15 @@ def send_email(service, kepada, subjek, isi_pesan, lampiran):
     message.attach(MIMEText(isi_pesan, 'plain'))
 
     # lampiran PDF
+    with open(lampiran, 'rb') as f:
+        mime = MIMEBase('application', 'pdf')
+        mime.set_payload(f.read())
+    encoders.encode_base64(mime)
+    mime.add_header('content-disposition', 'attachment', filename=os.path.basename(lampiran))
+    message.attach(mime)
+
+    raw = base64.urlsafe_b64decode(message.as_bytes()).decode()
+    service.users().message().send(userId='me', body={'raw': raw}).excecute()
+
+
+send_email()
