@@ -16,7 +16,7 @@ bulan_indonesia = [
 ]
 def controller_data():
     # Baca data
-    df = pd.read_excel('assets/gaji_contoh.xlsx')
+    df = pd.read_excel('assets/api/gaji_contoh.xlsx')
 
     # Mengisi semua data yang kosong dengan nilai 0
     df.fillna(0, inplace=True)
