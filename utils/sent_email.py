@@ -1,58 +1,30 @@
-from __future__ import print_function
-import os.path
-import base64
-
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient.discovery import build
-
-from email.mime.base import MIMEBase
+import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from email import encoders
-
-SCOPES = ['https://www.googleapis.com/auth/gmail.send']
-
-# Verifikasi email
-def gmail_sevice():
-    creds = None
-    if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                'assets\\api\\client_secret_2_70122570588-uf2tjvma1q7ggsi9tdqtmbga1uleqjs1.apps.googleusercontent.com.json', SCOPES
-                )
-            creds = flow.run_local_server(port=0)
-        with open('token.json', 'w') as token:
-            token.write(creds.to_json())
-    service = build('gmail', 'v1', credentials=creds)
-    return service
-
-service = gmail_sevice()
-
-def send_email(service, kepada, subjek, isi_pesan, lampiran):
-    message = MIMEMultipart()
-    message['email'] = kepada
-    message['subjek'] = subjek
-
-    # isi email
-    message.attach(MIMEText(isi_pesan, 'plain'))
-
-    # lampiran PDF
-    with open(lampiran, 'rb') as f:
-        mime = MIMEBase('application', 'pdf')
-        mime.set_payload(f.read())
-    encoders.encode_base64(mime)
-    mime.add_header('content-disposition', 'attachment', filename=os.path.basename(lampiran))
-    message.attach(mime)
-
-    raw = base64.urlsafe_b64decode(message.as_bytes()).decode()
-    service.users().message().send(userId='me', body={'raw': raw}).excecute()
+from Include.passwordsmtp import pw_smtp
 
 
-send_email()
+# Data login Gmail
+email_pengirim = pw_smtp(2)
+app_password =  pw_smtp(1) # App password dari langkah 2
+email_penerima = "wsanjaya69@gmail.com"
+
+# Buat pesan email
+msg = MIMEMultipart()
+msg["From"] = email_pengirim
+msg["To"] = email_penerima
+msg["Subject"] = "Test SMTP Gmail"
+
+# Isi email
+body = "Halo, ini email percobaan via SMTP Gmail + Python!"
+msg.attach(MIMEText(body, "plain"))
+
+try:
+    # Koneksi ke SMTP Gmail (pakai SSL port 465)
+    server = smtplib.SMTP_SSL("smtp.gmail.com", 465)
+    server.login(email_pengirim, app_password)
+    server.sendmail(email_pengirim, email_penerima, msg.as_string())
+    server.quit()
+    print("✅ Email berhasil dikirim!")
+except Exception as e:
+    print("❌ Error:", e)
