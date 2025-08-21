@@ -7,6 +7,7 @@ from reportlab.lib import colors
 from datetime import date
 from decimal import Decimal, ROUND_DOWN
 from PyPDF2 import PdfReader, PdfWriter
+from indonesian_number_normalizer import create_normalizer
 
 
 
@@ -14,6 +15,7 @@ bulan_indonesia = [
     "", "Januari", "Februari", "Maret", "April", "Mei", "Juni",
     "Juli", "Agustus", "September", "Oktober", "November", "Desember"
 ]
+
 def controller_data():
     # Baca data
     df = pd.read_excel('assets/api/gaji_contoh.xlsx')
@@ -223,19 +225,25 @@ def render_footer(c, item, x, start_y):
     c.drawString(x, y, "TOTAL DITERIMA ")
     angka = Decimal(str(item['total_diterima'])).quantize(Decimal("0.00"), rounding=ROUND_DOWN)
     c.drawString(x + a, y, f": Rp. {angka:,.2f}")
+
     #  Shape bagian penerimaan
     c.setLineWidth(1)
     margin_kiri = 1.5 * cm
-    c.roundRect(margin_kiri, y - 0.3 * cm, width - (margin_kiri * 2), 1 * cm, radius=10, stroke=1, fill=0)
-    y = start_y - 2 * cm
+    c.roundRect(margin_kiri, y - 1.3 * cm, width - (margin_kiri * 2), 2 * cm, radius=10, stroke=1, fill=0)
+    y -= 1 * cm
+
+    normalize = create_normalizer()
+    c.setFont("Helvetica-Bold", 11)
+    c.drawString(x,y, f"{normalize.number_to_words(item['total_diterima']).title()} Rupiah" )
+    y -= 2 * cm
+
 
     c.setFont("Helvetica", 11)
     c.drawString(x, y, "Mengetahui")
-    y -= y - 6 * cm
+    y -= 2 * cm
     c.drawString(x, y, "Joel Simatupang")
-    y -= y - 6.5 * cm
+    y -= 0.5 * cm
     c.drawString(x, y, "HRD")
-    y -= y - 3.5 * cm
 
     c.setFont("Helvetica", 9)
     hari_ini = date.today()
@@ -326,5 +334,5 @@ def single_slip(data, identifier, output_dir="data/slip"):
 
     print("❌ Data tidak ditemukan.")
 
-# nama = "Wisnu sanjaya"
-# single_slip(controller_data(), nama)
+nama = "ramli"
+single_slip(controller_data(), nama)
