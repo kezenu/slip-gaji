@@ -6,6 +6,7 @@ from email import encoders
 from Include.passwordsmtp import pw_smtp
 from datetime import datetime
 import os
+from utils.slip_generator import df
 
 def bulan_indonesia(x):
     hari_ini = datetime.now()
@@ -42,7 +43,7 @@ class PENGIRIM_EMAIL:
         self.penerima = penerima
         self.nama_file = nama_file
 
-    def kirim_email(self):
+    def template_email(self):
         email_pengirim = pw_smtp(2)
         app_password   = pw_smtp(1)
         email_penerima = self.penerima
@@ -73,6 +74,7 @@ class PENGIRIM_EMAIL:
 
 
 # --- Contoh kirim ---
-nama_file = os.path.join("data", "slip", "RAMLI.pdf")
-email_kirim = PENGIRIM_EMAIL("wsanjaya69@gmail.com", nama_file)
-email_kirim.kirim_email()
+def kirim_email():
+    nama_file = os.path.join("data", "slip", "RAMLI.pdf")
+    email_kirim = PENGIRIM_EMAIL("wsanjaya69@gmail.com", nama_file)
+    email_kirim.template_email()

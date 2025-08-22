@@ -7,7 +7,7 @@ from reportlab.lib import colors
 from datetime import date
 from decimal import Decimal, ROUND_DOWN
 from PyPDF2 import PdfReader, PdfWriter
-from indonesian_number_normalizer import create_normalizer
+from indonesian_number_normalizer import creat_normalizer
 
 
 # =========================
@@ -42,7 +42,6 @@ def controller_data():
 
     return df.reset_index().to_dict(orient="records")
 
-
 # =========================
 #  HELPER
 # =========================
@@ -50,7 +49,6 @@ def draw_field(c, label, value, x, y, offset=12 * cm):
     """Helper untuk menggambar field label : value"""
     c.drawString(x, y, label)
     c.drawString(x + offset, y, f": {value}")
-
 
 # =========================
 #  RENDERING
