@@ -6,7 +6,9 @@ from email import encoders
 from Include.passwordsmtp import pw_smtp
 from datetime import datetime
 import os
-from utils.slip_generator import df
+from slip_generator import controller_data
+import pandas as pd
+import time
 
 def bulan_indonesia(x):
     hari_ini = datetime.now()
@@ -75,6 +77,24 @@ class PENGIRIM_EMAIL:
 
 # --- Contoh kirim ---
 def kirim_email():
-    nama_file = os.path.join("data", "slip", "RAMLI.pdf")
-    email_kirim = PENGIRIM_EMAIL("wsanjaya69@gmail.com", nama_file)
-    email_kirim.template_email()
+    data = controller_data()
+    df = pd.DataFrame(data)
+    top5 = df.iloc[:5]
+    for row in top5.itertuples(index=False):
+        nama = row.nama
+        email = row.email
+        nama_file = os.path.join("data", "slip", f'{nama.replace(" ", "_")}.pdf')
+        email_kirim = PENGIRIM_EMAIL(email, nama_file)
+        email_kirim.template_email()
+        time.sleep(2)
+
+kirim_email()
+# data = controller_data()
+# df = pd.DataFrame(data)
+# top5 = df.iloc[:5]
+
+# for row in top5.itertuples(index=False):
+#     email = row.email
+#     nama = row.nama
+#     print(nama, email)
+#     time.sleep(1)

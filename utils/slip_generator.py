@@ -7,7 +7,7 @@ from reportlab.lib import colors
 from datetime import date
 from decimal import Decimal, ROUND_DOWN
 from PyPDF2 import PdfReader, PdfWriter
-from indonesian_number_normalizer import creat_normalizer
+from indonesian_number_normalizer import create_normalizer
 
 
 # =========================
@@ -246,6 +246,6 @@ def single_slip(data, identifier, output_dir=OUTPUT_DIR):
     print("❌ Data tidak ditemukan.")
 
 
-# testing
-nama = "ramli"
-single_slip(controller_data(), nama)
+# # testing
+# nama = "ramli"
+# single_slip(controller_data(), nama)
