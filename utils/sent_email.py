@@ -6,7 +6,6 @@ from email import encoders
 from Include.passwordsmtp import pw_smtp
 from datetime import datetime
 import os
-from slip_generator import controller_data
 import pandas as pd
 import time
 
@@ -77,8 +76,7 @@ HRD
 
 
 # --- kirim ---
-def kirim_email():
-    data = controller_data()
+def kirim_email(data):
     df = pd.DataFrame(data)
     top5 = df.iloc[:15]
     for row in top5.itertuples(index=False): #untuk percobaan 5 email teratas. kalau sudah oke ganti df

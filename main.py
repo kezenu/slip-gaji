@@ -12,7 +12,7 @@ while True:
         print("Slip gaji berhasil dicetak")
         continue
     elif pilihan == 2:
-        kirim_email()
+        kirim_email(controller_data())
         continue
     else:
         break
