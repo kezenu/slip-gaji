@@ -13,7 +13,7 @@ from indonesian_number_normalizer import create_normalizer
 # =========================
 #  KONFIGURASI
 # =========================
-EXCEL_PATH = "assets/api/gaji_contoh.xlsx"
+EXCEL_PATH = "assets/api/gaji_september.xlsx"
 LOGO_PATH = "assets/logo1.jpg"
 OUTPUT_DIR = "data/slip"
 

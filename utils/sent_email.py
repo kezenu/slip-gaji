@@ -78,8 +78,8 @@ HRD
 # --- kirim ---
 def kirim_email(data):
     df = pd.DataFrame(data)
-    top5 = df.iloc[:15]
-    for row in top5.itertuples(index=False): #untuk percobaan 5 email teratas. kalau sudah oke ganti df
+    # top5 = df.iloc[:15]
+    for row in df.itertuples(index=False): #untuk percobaan 5 email teratas. kalau sudah oke ganti df
         nama = row.nama
         email = row.email
         if not email:
